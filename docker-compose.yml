@@ -1,20 +1,78 @@
-version: '3.8'
 services:
-  nginx:
-    build:
-      context: ./docker/nginx
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: always
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - C:\laragon\www\laravelNgnix:/var/www
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs:ro
+      - vhostd:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+    labels:
+      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    restart: always
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - vhostd:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+
+  www:
+    image: nginx
+    restart: always
+    expose:
+      - "80"
+    volumes:
+      - /root/laravelnginx:/usr/share/nginx/html
+      - /root/laravelnginx/docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+    environment:
+      - VIRTUAL_HOST=prueba-firmeasy.gustavoam.me
+      - LETSENCRYPT_HOST=prueba-firmeasy.gustavoam.me 
+      - LETSENCRYPT_EMAIL=alexander.carlos@unheval.pe
     depends_on:
+      - nginx-proxy
+      - letsencrypt
       - php
 
   php:
     build:
       context: ./docker/php
-    # volumes:
-    #   - .:/var/www
     volumes:
-      - C:\laragon\www\laravelNgnix:/var/www
+      - /root/laravelnginx:/usr/share/nginx/html
+
+volumes: 
+  certs:
+  html:
+  vhostd:
+  acme:
+
+
+# version: '3.8'
+# services:
+#   nginx:
+#     build:
+#       context: ./docker/nginx
+#     ports:
+#       - "80:80"
+#     volumes:
+#       - C:\laragon\www\laravelNgnix:/var/www
+#     depends_on:
+#       - php
+
+#   php:
+#     build:
+#       context: ./docker/php
+#     # volumes:
+#     #   - .:/var/www
+#     volumes:
+#       - C:\laragon\www\laravelNgnix:/var/www
 

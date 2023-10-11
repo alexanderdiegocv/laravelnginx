@@ -1,0 +1,19 @@
+# Ignorar archivos y carpetas específicos
+/node_modules
+/vendor
+# /.env
+# /.env.*
+# /.idea
+# /.vscode
+# Homestead.json
+# Homestead.yaml
+# npm-debug.log
+# yarn-error.log
+
+# Ignorar archivos y carpetas dentro de las carpetas específicas
+# /public/storage
+# /storage/*.key
+# /storage/logs/*
+# /storage/framework/*
+# /storage/app/public/*
+# !/storage/app/public/.gitkeep
